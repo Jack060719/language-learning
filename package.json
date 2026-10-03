@@ -1,0 +1,18 @@
+{
+  "name": "language-learning",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --configLoader runner",
+    "build": "vite build --configLoader runner",
+    "preview": "vite preview --configLoader runner",
+    "test": "node --test src/logic.test.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
+    "marked": "^16.3.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}
