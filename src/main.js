@@ -195,11 +195,15 @@ function bindActions() {
     ttsText = document.querySelector('#tts-text').value.trim();
     if (!ttsText) { notice = '先貼入本課的音訊文本。'; render(); return; }
     if (!('speechSynthesis' in window)) { notice = '此瀏覽器沒有語音播放功能，請將文本送到外部 TTS。'; render(); return; }
+    const targetLanguage = state.language === 'es' ? 'es' : 'it';
+    const voice = speechSynthesis.getVoices().find((available) => available.lang.toLowerCase().startsWith(targetLanguage));
+    if (!voice) { notice = '目前裝置沒有符合目標語的語音，請使用外部 TTS 播放文本。'; render(); return; }
     ttsHidden = true;
     render();
     speechSynthesis.cancel();
     const speech = new SpeechSynthesisUtterance(ttsText);
     speech.lang = state.language === 'es' ? 'es-419' : 'it-IT';
+    speech.voice = voice;
     speech.rate = 0.9;
     speechSynthesis.speak(speech);
   });

@@ -25,6 +25,8 @@
 
 建立專用 Supabase 專案後，於 SQL Editor 執行 [`supabase/schema.sql`](supabase/schema.sql)，啟用 Email OTP 登入，並在 Auth URL 設定加入本機網址及 GitHub Pages 網址。GitHub 倉庫設定 Actions variables `VITE_SUPABASE_URL`、`VITE_SUPABASE_PUBLISHABLE_KEY`、`VITE_BASE_PATH`（此專案為 `/language-learning/`）；本機設定可參考 `.env.example`。前端只使用可公開的 publishable key，不得放入 secret 或 service-role key。網站公開，但學習者資料不寫入公開 Git 倉庫。
 
+Supabase 內建寄信服務目前只寄給專案團隊的電子郵件地址，且每小時額度有限；若使用其他地址登入，需要另設 SMTP。免費專案也可能因長時間未使用而暫停，建議定期從網站匯出 JSON 備份。詳見 [Supabase 寄信設定](https://supabase.com/docs/guides/auth/auth-smtp) 與 [正式環境說明](https://supabase.com/docs/guides/deployment/going-into-prod)。
+
 若未設定 Supabase，網站仍可閱讀課程文件；登入和追蹤功能會明確提示尚未連線。若匯入失敗，請保留批改包重試，網站不會假稱資料已儲存。
 
 ## 教師使用原則
