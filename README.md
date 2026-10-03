@@ -22,6 +22,8 @@
 
 ## 網站運行與發布
 
+**第一次連接 Supabase（不需自己寫 SQL）：** 在網站的「設定」頁按「複製資料表 SQL」。進入 Supabase 專案的 **SQL Editor → New Query**，貼上並按 **Run**。接著在專案上方 **Connect** 複製 Project URL 與 `sb_publishable_` 開頭的 publishable key，提供給 Codex 設定網站。不要提供 `sb_secret_`、service-role key 或資料庫密碼。若找不到 Project URL，直接提供目前 Supabase 專案儀表板的網址即可。
+
 需要 Node.js。執行 `npm.cmd install`、`npm.cmd run dev` 以在本機預覽；`npm.cmd test` 驗證排程和關卡；`npm.cmd run build` 產生 `dist/`。GitHub Actions 將 `main` 分支建置結果發布到 GitHub Pages。
 
 建立專用 Supabase 專案後，於 SQL Editor 執行 [`supabase/schema.sql`](supabase/schema.sql)，啟用 Email OTP 登入，並在 Auth URL 設定加入本機網址及 GitHub Pages 網址。GitHub 倉庫設定 Actions variables `VITE_SUPABASE_URL`、`VITE_SUPABASE_PUBLISHABLE_KEY`、`VITE_BASE_PATH`（此專案為 `/language-learning/`）；本機設定可參考 `.env.example`。前端只使用可公開的 publishable key，不得放入 secret 或 service-role key。網站公開，但學習者資料不寫入公開 Git 倉庫。

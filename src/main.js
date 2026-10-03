@@ -10,6 +10,7 @@ import errorsDoc from '../system/error-log.md?raw';
 import reviewDoc from '../system/review.md?raw';
 import assessmentDoc from '../system/assessment.md?raw';
 import lessonTemplate from '../system/lesson-template.md?raw';
+import schemaSql from '../supabase/schema.sql?raw';
 import { assessmentStatus, buildState, canRecordEvent, validateEvent } from './logic.js';
 
 const docs = { readme, roadmap, spanish, italian, record, 'error-log': errorsDoc, 'review-system': reviewDoc, 'assessment-system': assessmentDoc, 'lesson-template': lessonTemplate };
@@ -132,7 +133,7 @@ function assessmentPage() {
 }
 
 function setupPage() {
-  const connection = !client ? '<div class="empty-state">網站尚未設定 Supabase URL 與 publishable key。請依 README 完成專案及 GitHub Actions 設定。</div>' : user ? `<div class="connected"><strong>已連線</strong><span>${escapeHtml(user.email)}</span></div><button class="button secondary" id="export-data">匯出我的原始紀錄 JSON</button>` : `<form id="login-form" class="login-form"><label>電子郵件<input type="email" id="login-email" required placeholder="you@example.com" /></label><button class="button" type="submit">寄送登入連結</button></form>`;
+  const connection = !client ? `<div class="inline-hint">網站尚未連接 Supabase；課程文件仍可閱讀，私人紀錄暫時不能儲存。</div><ol class="setup-steps"><li>在 Supabase 建立 <strong>language-learning</strong> 專案。</li><li>在左側選 <strong>SQL Editor → New Query</strong>，按下方按鈕複製資料表 SQL，貼進編輯區，再按 <strong>Run</strong>。</li><li>在 Supabase 專案上方選 <strong>Connect</strong>，把 Project URL 和以 <code>sb_publishable_</code> 開頭的 key 提供給 Codex。</li></ol><button class="button secondary" id="copy-schema">複製資料表 SQL</button>` : user ? `<div class="connected"><strong>已連線</strong><span>${escapeHtml(user.email)}</span></div><button class="button secondary" id="export-data">匯出我的原始紀錄 JSON</button>` : `<form id="login-form" class="login-form"><label>電子郵件<input type="email" id="login-email" required placeholder="you@example.com" /></label><button class="button" type="submit">寄送登入連結</button></form>`;
   return `<section class="page-title"><p class="eyebrow">設定與說明</p><h1>你的學習紀錄，跨裝置接續。</h1><p>網站教材公開；學習歷程只提供登入者讀取。</p></section><article class="panel setup-panel"><h2>帳號與同步</h2>${connection}<p class="small-note">若同步失敗，請保留批改包並稍後重試；成功前不會計入進度。</p></article><article class="document">${linkedMarkdown(readme)}</article>`;
 }
 
@@ -174,6 +175,11 @@ async function saveEvent(event) {
 }
 
 function bindActions() {
+  document.querySelector('#copy-schema')?.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(schemaSql); notice = '資料表 SQL 已複製；請貼到 Supabase SQL Editor 的 New Query，再按 Run。'; }
+    catch { notice = '無法使用剪貼簿；請開啟 GitHub 上的 schema.sql 複製。'; }
+    render();
+  });
   document.querySelector('#login-form')?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const email = document.querySelector('#login-email').value.trim();
