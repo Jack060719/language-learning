@@ -6,7 +6,7 @@
 
 1. 閱讀 [ROADMAP.md](ROADMAP.md) 與 [西文課程地圖](maps/spanish.md)。義文地圖已規劃，但在西文 B1 通過前不得開始義文課程。
 2. 開啟網站，使用電子郵件登入。課程地圖公開，個人進度儲存在受登入保護的 Supabase 資料表。
-3. 對 Codex 說「開始 Spanish A1 Lesson 1」才開始第一課。請它遵循本專案的課堂格式與目前網站的弱點提示。
+3. 在網站儀表板複製學習摘要給 Codex，再說「開始 Spanish A1 Lesson 1」才開始第一課。請它遵循本專案的課堂格式與目前網站的弱點提示。
 4. 每課完成後，網站「學習紀錄」頁可複製作答紀錄包給 Codex；將 Codex 回傳的 JSON 批改包貼回網站，網站便更新進度、錯誤紀錄與複習卡。使用語音時另附錄音或直接使用語音介面。
 5. 按「到期複習」完成回想。必須通過 [CEFR 關卡](system/assessment.md) 才能解鎖下一級。
 
@@ -18,6 +18,7 @@
 - [西文地圖](maps/spanish.md)、[義文地圖](maps/italian.md)：逐單元規劃及每級可觀察的能力。
 - [學習紀錄格式](system/learning-record.md)、[Error Log](system/error-log.md)：Codex 與網站共用的紀錄契約。
 - [複習規則](system/review.md)、[評量規則](system/assessment.md)：何時複習、何時升級。
+- [課堂模板](system/lesson-template.md)：每課完整教材、練習與逐句批改的固定順序。
 
 ## 網站運行與發布
 

@@ -9,10 +9,11 @@ import record from '../system/learning-record.md?raw';
 import errorsDoc from '../system/error-log.md?raw';
 import reviewDoc from '../system/review.md?raw';
 import assessmentDoc from '../system/assessment.md?raw';
+import lessonTemplate from '../system/lesson-template.md?raw';
 import { assessmentStatus, buildState, canRecordEvent, validateEvent } from './logic.js';
 
-const docs = { readme, roadmap, spanish, italian, record, 'error-log': errorsDoc, 'review-system': reviewDoc, 'assessment-system': assessmentDoc };
-const titles = { readme: '使用說明', roadmap: '總體路線', spanish: '西文課程地圖', italian: '義文課程地圖', record: '學習紀錄格式', 'error-log': 'Error Log 規則', 'review-system': '複習系統規則', 'assessment-system': 'CEFR 評量規則' };
+const docs = { readme, roadmap, spanish, italian, record, 'error-log': errorsDoc, 'review-system': reviewDoc, 'assessment-system': assessmentDoc, 'lesson-template': lessonTemplate };
+const titles = { readme: '使用說明', roadmap: '總體路線', spanish: '西文課程地圖', italian: '義文課程地圖', record: '學習紀錄格式', 'error-log': 'Error Log 規則', 'review-system': '複習系統規則', 'assessment-system': 'CEFR 評量規則', 'lesson-template': '課堂模板' };
 const app = document.querySelector('#app');
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -35,6 +36,7 @@ function linkedMarkdown(source) {
     'ROADMAP.md': '#roadmap', 'maps/spanish.md': '#spanish', 'maps/italian.md': '#italian',
     'system/learning-record.md': '#record', 'system/error-log.md': '#error-log',
     'system/review.md': '#review-system', 'system/assessment.md': '#assessment-system',
+    'system/lesson-template.md': '#lesson-template',
     'assessment.md': '#assessment-system', 'review.md': '#review-system',
     'supabase/schema.sql': 'https://github.com/Jack060719/language-learning/blob/main/supabase/schema.sql',
   };
@@ -69,12 +71,24 @@ function metric(value, caption) {
   return `<div class="metric"><strong>${escapeHtml(value)}</strong><span>${caption}</span></div>`;
 }
 
+function teacherContext() {
+  return {
+    language: state.language,
+    cefr_level: state.level,
+    passed_gates: state.passed,
+    due_review: state.due.slice(0, 12).map(({ id, kind, front, back, language, next_due }) => ({ id, kind, front, back, language, next_due })),
+    current_weaknesses: state.errors.filter((entry) => entry.status !== '已改善').slice(0, 5).map(({ language, category, corrected, reason, count, status }) => ({ language, category, corrected, reason, count, status })),
+    teaching_guidance: state.guidance,
+    exported_at: new Date().toISOString(),
+  };
+}
+
 function homePage() {
   const active = `${label(state.language)} ${state.level}`;
   const accuracy = state.reviewAccuracy === null ? '尚無資料' : `${state.reviewAccuracy}%`;
   const weakness = state.errors.find((entry) => entry.status !== '已改善');
   const dataReady = user ? '' : '<div class="inline-hint">登入後顯示跨裝置同步的個人紀錄。目前數值為新學習者起點。</div>';
-  return `<section class="hero"><div><p class="eyebrow">長期語言學習專案</p><h1>一步一步，<br><em>學到能使用。</em></h1><p>先建立穩定的西班牙文 B1，再透過橋接開始義大利文。進度由實際理解和輸出決定。</p><div class="hero-actions"><a class="button" href="#roadmap">查看課程地圖</a><a class="button secondary" href="#study">記錄學習</a></div></div><div class="phase-card"><span>目前階段</span><strong>${active}</strong><p>${state.passed.es.includes('B1') ? '西文維持課持續進行；義文已解鎖。' : '義文尚未解鎖。先穩固西文。'}</p><div class="phase-line"><i></i><i></i><i></i></div></div></section>
+  return `<section class="hero"><div><p class="eyebrow">長期語言學習專案</p><h1>一步一步，<br><em>學到能使用。</em></h1><p>先建立穩定的西班牙文 B1，再透過橋接開始義大利文。進度由實際理解和輸出決定。</p><div class="hero-actions"><a class="button" href="#roadmap">查看課程地圖</a><a class="button secondary" href="#study">記錄學習</a><button class="button secondary" id="copy-context" ${user ? '' : 'disabled'}>複製學習摘要</button></div></div><div class="phase-card"><span>目前階段</span><strong>${active}</strong><p>${state.passed.es.includes('B1') ? '西文維持課持續進行；義文已解鎖。' : '義文尚未解鎖。先穩固西文。'}</p><div class="phase-line"><i></i><i></i><i></i></div></div></section>
     ${dataReady}<section class="section-heading"><div><p class="eyebrow">學習儀表板</p><h2>能力的證據</h2></div><span>Asia/Taipei · 最近複習依 30 天計</span></section>
     <div class="metrics">${metric(state.lessonCount, 'Lessons Completed')}${metric(state.vocabularyCount, 'Vocabulary Learned')}${metric(state.grammarCount, 'Grammar Topics')}${metric(state.listeningHours, 'Listening Hours')}${metric(state.speakingSessions, 'Speaking Sessions')}${metric(state.writingSessions, 'Writing Sessions')}${metric(accuracy, 'Review Accuracy')}${metric(state.due.length, '到期複習')}</div>
     <div class="two-column"><article class="panel"><p class="eyebrow">下一步</p><h3>${escapeHtml(active)}</h3><p>${escapeHtml(state.guidance)}</p><a class="inline-link" href="#review">查看到期項 →</a></article><article class="panel"><p class="eyebrow">目前弱點</p><h3>${weakness ? escapeHtml(weakness.category) : '尚無待補強錯誤'}</h3><p>${weakness ? `${escapeHtml(weakness.corrected)} · 累積 ${weakness.count} 次` : '開始上課並匯入批改後，這裡會顯示反覆出現的錯誤。'}</p><a class="inline-link" href="#errors">查看 Error Log →</a></article></div>
@@ -171,8 +185,13 @@ function bindActions() {
     const lessonId = document.querySelector('#lesson-id').value.trim();
     const answers = document.querySelector('#raw-answers').value.trim();
     if (!/^(es|it)-(A1|A2|B1)-/.test(lessonId) || !answers) { notice = '請填入有效課次 ID 與原始作答。'; render(); return; }
-    const request = { schema_version: 1, event_id: crypto.randomUUID(), event_type: 'lesson', occurred_at: new Date().toISOString(), lesson_id: lessonId, raw_answers: answers, instruction: '請依 system/learning-record.md 逐句批改，回傳單一 LearningEvent v1 JSON；有錄音時另評口說，無音訊不得宣稱完成聽說評量。' };
+    const request = { schema_version: 1, event_id: crypto.randomUUID(), event_type: 'lesson', occurred_at: new Date().toISOString(), lesson_id: lessonId, teacher_context: teacherContext(), raw_answers: answers, instruction: '請依 system/learning-record.md 逐句批改，回傳單一 LearningEvent v1 JSON；有錄音時另評口說，無音訊不得宣稱完成聽說評量。' };
     try { await navigator.clipboard.writeText(JSON.stringify(request, null, 2)); notice = '作答請求已複製，請貼給 Codex。'; } catch { notice = '無法使用剪貼簿。請改在 HTTPS 或本機網址開啟網站。'; }
+    render();
+  });
+  document.querySelector('#copy-context')?.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(JSON.stringify(teacherContext(), null, 2)); notice = '學習摘要已複製，請貼給 Codex。'; }
+    catch { notice = '無法使用剪貼簿，請在 HTTPS 或本機網址重試。'; }
     render();
   });
   document.querySelector('#save-feedback')?.addEventListener('click', async () => {
